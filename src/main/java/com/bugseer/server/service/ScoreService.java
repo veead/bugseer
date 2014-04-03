@@ -1,4 +1,4 @@
-package com.bugseer.service;
+package com.bugseer.server.service;
 
 
 import javax.ws.rs.GET;

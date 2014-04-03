@@ -1,4 +1,4 @@
-package com.bugseer.util;
+package com.bugseer.server.util;
 
 import java.io.IOException;
 import java.io.InputStream;

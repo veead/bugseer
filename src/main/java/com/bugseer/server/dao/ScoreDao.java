@@ -1,8 +1,8 @@
-package com.bugseer.dao;
+package com.bugseer.server.dao;
 
 import java.util.List;
 
-import com.bugseer.model.ScoreBean;
+import com.bugseer.server.model.ScoreBean;
 
 /**
  * @author

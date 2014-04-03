@@ -17,7 +17,7 @@
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
-				<value>com.bugseer.model.Score</value>
+				<value>com.bugseer.server.model.Score</value>
 			</list>
 		</property>
 	</bean>

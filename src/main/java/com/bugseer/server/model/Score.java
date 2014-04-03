@@ -1,4 +1,4 @@
-package com.bugseer.model;
+package com.bugseer.server.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -14,7 +14,7 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor
 @Entity
-@Table(name = "score_vw_1")
+@Table(name = "score_vw")
 public class Score implements Serializable {
 	private static final long serialVersionUID = 6648244950449963526L;
 

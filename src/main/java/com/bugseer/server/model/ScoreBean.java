@@ -1,4 +1,4 @@
-package com.bugseer.model;
+package com.bugseer.server.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -17,7 +17,7 @@ import lombok.Setter;
  *
  */
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-@XmlRootElement(name = "scores")
+@XmlRootElement(name = "filescore")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ScoreBean implements Serializable {
 	private static final long serialVersionUID = 6648244950449963126L;

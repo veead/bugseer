@@ -14,6 +14,9 @@
 		<org.hibernate-version>4.2.11.Final</org.hibernate-version>
 		<!-- Jackson JAX-RS provider 2.2.* doesn't work with CXF 2.5.*. -->
 		<com.fasterxml.jackson-version>2.1.5</com.fasterxml.jackson-version>
+		<gwt.version>2.5.0</gwt.version>
+		<gwtplugin.version>2.5.0</gwtplugin.version>
+		<gxt.version>3.0.0</gxt.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -63,6 +66,58 @@
 				<configuration>
 					<path>/bugseer</path>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.1.1</version>
+				<configuration>
+					<warName>bugseer</warName>
+					<packagingExcludes>src/main/webapp/WEB-INF/deploy/**</packagingExcludes>
+					<packagingExcludes>src/main/webapp/WEB-INF/lib/gwt-user*</packagingExcludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>src/main/webapp/bugseer/</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+						<fileset>
+							<directory>src/main/webapp/WEB-INF/lib</directory>
+							<includes>
+								<include>gwt*.jar</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>gwt-maven-plugin</artifactId>
+					<version>${gwtplugin.version}</version>
+					<executions>
+						<execution>
+							<id>BugSeer</id>
+							<configuration>
+								<module>com.bugseer.BugSeer</module>
+								<style>PRETTY</style>
+							</configuration>
+							<goals>
+								<goal>clean</goal>
+								<goal>compile</goal>
+								<goal>test</goal>
+							</goals>
+						</execution>
+					</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -149,6 +204,30 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.20</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-servlet</artifactId>
+			<version>${gwt.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<version>${gwt.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sencha.gxt</groupId>
+			<artifactId>gxt</artifactId>
+			<version>${gxt.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.12.6</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

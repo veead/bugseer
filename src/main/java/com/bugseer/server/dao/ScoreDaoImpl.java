@@ -1,4 +1,4 @@
-package com.bugseer.dao;
+package com.bugseer.server.dao;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bugseer.model.Score;
-import com.bugseer.model.ScoreBean;
+import com.bugseer.server.model.Score;
+import com.bugseer.server.model.ScoreBean;
 
 @Component("scoreDao")
 public class ScoreDaoImpl implements ScoreDao {

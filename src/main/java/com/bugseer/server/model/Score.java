@@ -14,7 +14,7 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor
 @Entity
-@Table(name = "score_vw")
+@Table(name = "vw_score")
 public class Score implements Serializable {
 	private static final long serialVersionUID = 6648244950449963526L;
 

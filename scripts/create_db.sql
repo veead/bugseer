@@ -29,14 +29,30 @@ LOAD DATA LOCAL INFILE 'files.csv' INTO TABLE commit_filenames FIELDS TERMINATED
 LOAD DATA LOCAL INFILE 'commits.csv' INTO TABLE commit_jira FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' (sha, jira);
 LOAD DATA LOCAL INFILE 'jira.csv' INTO TABLE jira FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (jira, priority, created, updated);
 
-CREATE VIEW score_vw AS
+SET group_concat_max_len = 12000;
+CREATE VIEW vw_score_normalized_time AS
 SELECT 
  SUBSTRING_INDEX(cf.filename, '/', -1) "filename",
- SUM(1/(1+ EXP(@weight-@weight*(cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on)))) "score",
- group_concat((cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on) ORDER BY cf.sha_ts) "x",
- group_concat(round(1/(1+ EXP(@weight-@weight*((cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on)))),4) ORDER BY cf.sha_ts) "y",
+ SUM(1/(1+ EXP(12-12*(cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on)))) "score",
+ group_concat((cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on) ORDER BY cf.sha_ts SEPARATOR ':') "x",
+ group_concat(round(1/(1+ EXP(12-12*((cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on)))),4) ORDER BY cf.sha_ts SEPARATOR ':') "y",
  count(j.jira) "num_bugs"
 FROM commit_filenames cf, commit_jira cj, jira j
-WHERE j.jira = cj.jira AND cj.sha = cf.sha AND cf.filename LIKE '%java'
+WHERE j.jira = cj.jira AND cj.sha = cf.sha
 GROUP BY SUBSTRING_INDEX(cf.filename, '/', -1)
 ORDER BY 2 desc;
+
+CREATE VIEW vw_score_timestamp AS
+SELECT 
+ SUBSTRING_INDEX(cf.filename, '/', -1) "filename",
+ SUM(1/(1+ EXP(12-12*(cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on)))) "score",
+ group_concat(cf.sha_ts ORDER BY cf.sha_ts SEPARATOR ':') "x",
+ group_concat(round(1/(1+ EXP(12-12*((cf.sha_ts - cf.created_on)/(unix_timestamp(NOW()) -  cf.created_on)))),4) ORDER BY cf.sha_ts SEPARATOR ':') "y",
+ count(j.jira) "num_bugs"
+FROM commit_filenames cf, commit_jira cj, jira j
+WHERE j.jira = cj.jira AND cj.sha = cf.sha
+GROUP BY SUBSTRING_INDEX(cf.filename, '/', -1)
+ORDER BY 2 desc;
+
+CREATE VIEW vw_score AS
+SELECT * FROM vw_score_timestamp;

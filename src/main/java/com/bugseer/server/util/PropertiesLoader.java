@@ -17,15 +17,15 @@ public class PropertiesLoader {
 	private static Properties props;
 
 	public static Properties getProperties() {
-		if (props == null)
+		if (props == null) {
 			props = loadProperties();
+		}
 		return props;
 	}
 
 	private static Properties loadProperties() {
 		Properties props = new Properties();
-		InputStream inputStream = PropertiesLoader.class.getClassLoader()
-				.getResourceAsStream("app.properties");
+		InputStream inputStream = PropertiesLoader.class.getClassLoader().getResourceAsStream("app.properties");
 		try {
 			props.load(inputStream);
 		} catch (IOException e) {

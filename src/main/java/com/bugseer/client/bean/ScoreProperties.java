@@ -11,11 +11,11 @@ public interface ScoreProperties extends PropertyAccess<ScoreBean> {
 
 		ValueProvider<ScoreBean, String> filename();
 
-		ValueProvider<ScoreBean, String> score();
+		ValueProvider<ScoreBean, Double> score();
 
 		ValueProvider<ScoreBean, String> x();
 
 		ValueProvider<ScoreBean, String> y();
 
-		ValueProvider<ScoreBean, String> numBugs();
+		ValueProvider<ScoreBean, Integer> numBugs();
 }

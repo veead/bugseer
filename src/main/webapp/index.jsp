@@ -6,6 +6,9 @@
 <title>Application</title>
 </head>
 <body>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="js/highcharts.js"></script>
+<script type="text/javascript" src="js/highcharts-more.js"></script>
 <script type="text/javascript" language="javascript" src="bugseer/bugseer.nocache.js"></script>
 <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position: absolute; width: 0; height: 0; border: 0"></iframe>
 	<noscript>

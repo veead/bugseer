@@ -23,6 +23,7 @@
 		</jaxrs:features>
 		<jaxrs:serviceBeans>
 			<ref bean="scoreService" />
+			<ref bean="gitService" />
 		</jaxrs:serviceBeans>
 		<jaxrs:extensionMappings>
 			<entry key="json" value="application/json" />

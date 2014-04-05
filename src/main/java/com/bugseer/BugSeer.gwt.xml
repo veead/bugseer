@@ -18,6 +18,7 @@
 
 	<!-- Other module inherits -->
 	<inherits name='com.sencha.gxt.ui.GXT' />
+	<inherits name="org.moxieapps.gwt.highcharts.Highcharts"/>
 	<!-- Specify the app entry point class. -->
 	<entry-point class='com.bugseer.client.App'/>
 	

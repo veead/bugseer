@@ -4,18 +4,17 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.bugseer.server.model.Score;
 import com.bugseer.server.model.ScoreBean;
+import com.bugseer.server.ws.Type;
 
 @Component("scoreDao")
 public class ScoreDaoImpl implements ScoreDao {
@@ -23,32 +22,36 @@ public class ScoreDaoImpl implements ScoreDao {
 	private SessionFactory sessionFactory;
 
 	@Transactional(readOnly=true)
-	public List<ScoreBean> fetchAllScores() {
-		return readByQueryBean();
-	}
-
-	private List<ScoreBean> readByCriteria() {
-		DetachedCriteria criteria = DetachedCriteria.forClass(Score.class);
-		criteria.setResultTransformer(Transformers.aliasToBean(ScoreBean.class));
-		Criteria executableCriteria = criteria.getExecutableCriteria(sessionFactory.getCurrentSession());
-		@SuppressWarnings("unchecked")
-		List<ScoreBean> scores = executableCriteria.list();
-		return scores;
-	}
-
-	private List<Score> readByQuery() {
+	public List<ScoreBean> fetchScores(Type type) {
 		Session session = sessionFactory.getCurrentSession();
 		String queryString = "SELECT filename, score, x, y, numBugs from " + Score.class.getName();
+		if (type == Type.FRONTEND) {
+			queryString += " WHERE filename like '%css' OR filename like '%js' OR filename like '%html' OR filename like '%tpl'";
+		} else if (type == Type.BACKEND) {
+			queryString += " WHERE filename like '%java'";
+		}
 		Query query = session.createQuery(queryString);
 
+		List<ScoreBean> scoreBeans = new ArrayList<ScoreBean>();
 		@SuppressWarnings("unchecked")
-		List<Score> result = query.list();
-		return result;
+		List<Object[]> result = query.list();
+		for (Object[] row : result) {
+			scoreBeans.add(new ScoreBean(
+					(String) row[0],
+					(BigDecimal) row[1],
+					(String) row[2],
+					(String) row[3],
+					(Integer) row[4]));
+		}
+		return scoreBeans;
 	}
 
-	private List<ScoreBean> readByQueryBean() {
+	@Transactional(readOnly=true)
+	public List<ScoreBean> fetchScoresByFiles(List<String> filenames) {
 		Session session = sessionFactory.getCurrentSession();
 		String queryString = "SELECT filename, score, x, y, numBugs from " + Score.class.getName();
+		queryString += String.format(" WHERE filename in (%s)", StringUtils.collectionToDelimitedString(filenames, ",", "'", "'"));
+
 		Query query = session.createQuery(queryString);
 
 		List<ScoreBean> scoreBeans = new ArrayList<ScoreBean>();

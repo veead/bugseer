@@ -21,10 +21,11 @@ public class ScoreDaoImpl implements ScoreDao {
 	@Autowired
 	private SessionFactory sessionFactory;
 
+	//TODO Convert to Criteria + BeanAlias
 	@Transactional(readOnly=true)
 	public List<ScoreBean> fetchScores(Type type) {
 		Session session = sessionFactory.getCurrentSession();
-		String queryString = "SELECT filename, score, x, y, numBugs from " + Score.class.getName();
+		String queryString = "SELECT filename, score, x, y, jira, numBugs from " + Score.class.getName();
 		if (type == Type.FRONTEND) {
 			queryString += " WHERE filename like '%css' OR filename like '%js' OR filename like '%html' OR filename like '%tpl'";
 		} else if (type == Type.BACKEND) {
@@ -41,15 +42,17 @@ public class ScoreDaoImpl implements ScoreDao {
 					(BigDecimal) row[1],
 					(String) row[2],
 					(String) row[3],
-					(Integer) row[4]));
+					(String) row[4],
+					(Integer) row[5]));
 		}
 		return scoreBeans;
 	}
 
+	//TODO Convert to Criteria + BeanAlias
 	@Transactional(readOnly=true)
 	public List<ScoreBean> fetchScoresByFiles(List<String> filenames) {
 		Session session = sessionFactory.getCurrentSession();
-		String queryString = "SELECT filename, score, x, y, numBugs from " + Score.class.getName();
+		String queryString = "SELECT filename, score, x, y, jira, numBugs from " + Score.class.getName();
 		queryString += String.format(" WHERE filename in (%s)", StringUtils.collectionToDelimitedString(filenames, ",", "'", "'"));
 
 		Query query = session.createQuery(queryString);
@@ -63,7 +66,8 @@ public class ScoreDaoImpl implements ScoreDao {
 					(BigDecimal) row[1],
 					(String) row[2],
 					(String) row[3],
-					(Integer) row[4]));
+					(String) row[4],
+					(Integer) row[5]));
 		}
 		return scoreBeans;
 	}

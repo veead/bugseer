@@ -26,6 +26,7 @@ public class ScoreBean implements Serializable {
 	private BigDecimal score;
 	private String x;
 	private String y;
+	private String jira;
 	private Integer numBugs;
 
 }

@@ -6,11 +6,15 @@ import java.util.List;
 import org.moxieapps.gwt.highcharts.client.Axis;
 import org.moxieapps.gwt.highcharts.client.Chart;
 import org.moxieapps.gwt.highcharts.client.DateTimeLabelFormats;
+import org.moxieapps.gwt.highcharts.client.Point;
 import org.moxieapps.gwt.highcharts.client.Series;
 import org.moxieapps.gwt.highcharts.client.ToolTip;
 import org.moxieapps.gwt.highcharts.client.ToolTipData;
 import org.moxieapps.gwt.highcharts.client.ToolTipFormatter;
+import org.moxieapps.gwt.highcharts.client.events.PointClickEvent;
+import org.moxieapps.gwt.highcharts.client.events.PointClickEventHandler;
 import org.moxieapps.gwt.highcharts.client.plotOptions.Marker;
+import org.moxieapps.gwt.highcharts.client.plotOptions.SeriesPlotOptions;
 import org.moxieapps.gwt.highcharts.client.plotOptions.SplinePlotOptions;
 
 import com.bugseer.client.bean.ScoreBean;
@@ -18,6 +22,7 @@ import com.bugseer.client.events.GridChartEvent;
 import com.bugseer.client.events.handlers.GridChartEventHandler;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.i18n.shared.DateTimeFormat;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.widget.core.client.container.CenterLayoutContainer;
@@ -51,7 +56,16 @@ public class ScoreChart implements IsWidget {
 			.setType(Series.Type.SPLINE)
 			.setChartTitleText("Scores")
 			.setSplinePlotOptions(new SplinePlotOptions().setMarker(new Marker().setSymbol(Marker.Symbol.CIRCLE)))
+			.setSeriesPlotOptions(new SeriesPlotOptions()
+				.setPointClickEventHandler(new PointClickEventHandler() {
+					public boolean onClick(PointClickEvent pointClickEvent) {
+						String link = "https://appdirect.jira.com/browse/" + pointClickEvent.getPointName();
+						Window.open(link,"_blank","");
+						return true;
+					}
+				}))
 			.setToolTip(new ToolTip()
+				.setUseHTML(true)
 				.setFormatter(new ToolTipFormatter() {
 					public String format(ToolTipData toolTipData) {
 						return DateTimeFormat.getFormat("d-MMM-yyyy").format(new Date(toolTipData.getXAsLong())) + "<br /><b>" + toolTipData.getYAsDouble() + "</b>";
@@ -77,16 +91,17 @@ public class ScoreChart implements IsWidget {
 		ScoreBean score = scores.get(scores.size()-1);
 		chart.addSeries(chart.createSeries()
 				.setName(score.getFilename())
-				.setPoints(toNumberArray(score.getX(), score.getY())));
+				.setPoints(toPointsArray(score.getX(), score.getY(), score.getJira())));
 	}
 
-	private Number[][] toNumberArray(String x, String y) {
+	private Point[] toPointsArray(String x, String y, String jira) {
 		String[] xnum = x.split(":");
 		String[] ynum = y.split(":");
-		Number[][] points = new Number[xnum.length][2];
+		String[] jiras = jira.split(":");
+		Point[] points = new Point[xnum.length];
 		for (int i = 0; i<xnum.length; i++) {
-			points[i][0] = 1000L * Long.parseLong(xnum[i]);
-			points[i][1] = Double.parseDouble(ynum[i]);
+			points[i] = new Point(1000L * Long.parseLong(xnum[i]), Double.parseDouble(ynum[i]));
+			points[i].setName(jiras[i]);
 		}
 		return points;
 	}

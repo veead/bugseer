@@ -31,7 +31,9 @@ public class Score implements Serializable {
 	@Column(name = "y", length = 2048)
 	private String y;
 
+	@Column(name = "jira", length = 2048)
+	private String jira;
+
 	@Column(name = "num_bugs")
 	private Integer numBugs;
-
 }

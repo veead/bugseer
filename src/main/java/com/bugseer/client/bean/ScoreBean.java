@@ -6,5 +6,6 @@ public interface ScoreBean {
 	public Double getScore();
 	public String getX();
 	public String getY();
+	public String getJira();
 	public Integer getNumBugs();
 }

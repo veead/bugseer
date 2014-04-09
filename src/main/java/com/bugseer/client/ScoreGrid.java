@@ -13,12 +13,18 @@ import com.bugseer.client.bean.ScoreList;
 import com.bugseer.client.bean.ScoreProperties;
 import com.bugseer.client.events.GridChartEvent;
 import com.bugseer.client.reader.DataRecordJsonReader;
+import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.IdentityValueProvider;
@@ -37,6 +43,8 @@ import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.widget.core.client.event.RefreshEvent;
+import com.sencha.gxt.widget.core.client.event.RefreshEvent.RefreshHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.SimpleComboBox;
@@ -58,6 +66,7 @@ import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 public class ScoreGrid implements IsWidget {
 
+	private static final Double CUTOFF = 1.2D;
 	private VerticalLayoutContainer container;
 	private SimpleEventBus eventBus;
 	Grid<ScoreBean> grid;
@@ -73,10 +82,13 @@ public class ScoreGrid implements IsWidget {
 
 			HorizontalLayoutContainer horizontalLayoutContainer = new HorizontalLayoutContainer();
 			final TextField textField = new TextField();
-			TextButton button = new TextButton("Fetch");
-			horizontalLayoutContainer.add(textField, new HorizontalLayoutData(0.8, -1, new Margins(0,5,0,0)));
-			horizontalLayoutContainer.add(button, new HorizontalLayoutData(0.2, -1, new Margins(0,0,0,5)));
-			container.add(horizontalLayoutContainer, new VerticalLayoutData(200, 50));
+			TextButton button = new TextButton("Fetch Pull#");
+			final Label label = new Label();
+			label.setStyleName("message-label");
+			horizontalLayoutContainer.add(textField, new HorizontalLayoutData(0.25, -1, new Margins(0,5,0,0)));
+			horizontalLayoutContainer.add(button, new HorizontalLayoutData(0.15, -1, new Margins(0,0,0,5)));
+			horizontalLayoutContainer.add(label, new HorizontalLayoutData(0.60, -1, new Margins(0,0,0,15)));
+			container.add(horizontalLayoutContainer, new VerticalLayoutData(700, 50));
 
 
 			final ScoreAutoBeanFactory factory = GWT.create(ScoreAutoBeanFactory.class);
@@ -84,29 +96,70 @@ public class ScoreGrid implements IsWidget {
 			ScoreProperties props = GWT.create(ScoreProperties.class);
 			final ListStore<ScoreBean> store = new ListStore<ScoreBean>(props.key());
 
-			String path = GWT.getHostPageBaseURL() + "score.json";
+			String path = GWT.getHostPageBaseURL() + "api/score/list.json";
 			final ListLoader<ListLoadConfig, ListLoadResult<ScoreBean>> loader = resetLoader(path, factory, reader, store);
 
-			ColumnConfig<ScoreBean, String> cc1 = new ColumnConfig<ScoreBean, String>(props.filename(), 150, "filename");
-			ColumnConfig<ScoreBean, Double> cc2 = new ColumnConfig<ScoreBean, Double>(props.score(), 20, "score");
-			ColumnConfig<ScoreBean, String> cc3 = new ColumnConfig<ScoreBean, String>(props.x(), 150, "x");
-			ColumnConfig<ScoreBean, String> cc4 = new ColumnConfig<ScoreBean, String>(props.y(), 150, "y");
-			ColumnConfig<ScoreBean, Integer> cc5 = new ColumnConfig<ScoreBean, Integer>(props.numBugs(), 20, "numBugs");
+			ColumnConfig<ScoreBean, String> fileColumn = new ColumnConfig<ScoreBean, String>(props.filename(), 100, "filename");
+			ColumnConfig<ScoreBean, Double> scoreColumn = new ColumnConfig<ScoreBean, Double>(props.score(), 60, "score");
+			ColumnConfig<ScoreBean, Integer> numBugsColumn = new ColumnConfig<ScoreBean, Integer>(props.numBugs(), 30, "numBugs");
+			final NumberFormat number = NumberFormat.getFormat("#.####");
+			scoreColumn.setCell(new AbstractCell<Double>() {
+				@Override
+				public void render(com.google.gwt.cell.client.Cell.Context context, Double value, SafeHtmlBuilder sb) {
+					if (value > CUTOFF) {
+						sb.appendHtmlConstant("<span style='color: red; font-weight: bold'>" + number.format(value) + "</span>");
+					} else {
+						sb.appendHtmlConstant(number.format(value));
+					}
+				}
+			});
 
 			RowNumberer<ScoreBean> numberer = new RowNumberer<ScoreBean>(new IdentityValueProvider<ScoreBean>());
+			numberer.setWidth(30);
 			List<ColumnConfig<ScoreBean, ?>> l = new ArrayList<ColumnConfig<ScoreBean, ?>>();
 			l.add(numberer);
-			l.add(cc1);
-			l.add(cc2);
-			l.add(cc5);
+			l.add(fileColumn);
+			l.add(scoreColumn);
+			l.add(numBugsColumn);
 			ColumnModel<ScoreBean> cm = new ColumnModel<ScoreBean>(l);
 			AggregationRowConfig<ScoreBean> aggregation = new AggregationRowConfig<ScoreBean>();
-			aggregation.setRenderer(cc1, new AggregationSafeHtmlRenderer<ScoreBean>("Score"));
-			aggregation.setRenderer(cc2, new AggregationNumberSummaryRenderer<ScoreBean, Number>(new AvgSummaryType<Number>()));
-			aggregation.setRenderer(cc5, new AggregationNumberSummaryRenderer<ScoreBean, Number>(new SumSummaryType<Number>()));
+			aggregation.setRenderer(fileColumn, new AggregationSafeHtmlRenderer<ScoreBean>("Score"));
+			aggregation.setRenderer(scoreColumn, new AggregationNumberSummaryRenderer<ScoreBean, Number>(new AvgSummaryType<Number>()));
+			aggregation.setRenderer(numBugsColumn, new AggregationNumberSummaryRenderer<ScoreBean, Number>(new SumSummaryType<Number>()));
 			cm.addAggregationRow(aggregation);
 
-			grid = new Grid<ScoreBean>(store, cm);
+			grid = new Grid<ScoreBean>(store, cm) {
+				@Override
+				protected void onAfterFirstAttach() {
+					super.onAfterFirstAttach();
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							loader.load();
+						}
+					});
+				}
+			};
+			grid.addRefreshHandler(new RefreshHandler() {
+				@Override
+				public void onRefresh(RefreshEvent event) {
+					if (grid.getStore().size() > 100) {
+						label.setText("");
+					} else {
+						int count = 0;
+						for (ScoreBean score : grid.getStore().getAll()) {
+							if (score.getScore()> CUTOFF) {
+								count++;
+							}
+						}
+						if (count > 0) {
+							label.setText("You have " + count +" bug prone files");
+						} else {
+							label.setText("Nice, LGTM!");
+						}
+					}
+				}
+			});
 
 			SelectionChangedHandler<ScoreBean> handler = new SelectionChangedHandler<ScoreBean>() {
 				@Override
@@ -124,7 +177,6 @@ public class ScoreGrid implements IsWidget {
 			grid.setLoader(loader);
 			grid.setLoadMask(true);
 			grid.setBorders(true);
-			grid.getView().setEmptyText("Please hit the load button.");
 
 			FramedPanel panel = new FramedPanel();
 			VerticalLayoutContainer gridContainer = new VerticalLayoutContainer();
@@ -148,13 +200,6 @@ public class ScoreGrid implements IsWidget {
 			panel.setWidget(gridContainer);
 			panel.addStyleName("margin-10");
 			panel.setButtonAlign(BoxLayoutPack.CENTER);
-			panel.addButton(new TextButton("Load Json", new SelectHandler() {
-
-				@Override
-				public void onSelect(SelectEvent event) {
-					loader.load();
-				}
-			}));
 			button.addSelectHandler(new SelectHandler() {
 				@Override
 				public void onSelect(SelectEvent event) {

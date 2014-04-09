@@ -17,5 +17,7 @@ public interface ScoreProperties extends PropertyAccess<ScoreBean> {
 
 		ValueProvider<ScoreBean, String> y();
 
+		ValueProvider<ScoreBean, String> jira();
+
 		ValueProvider<ScoreBean, Integer> numBugs();
 }

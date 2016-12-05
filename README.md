@@ -1,5 +1,5 @@
 #First time
-1. Get the list of files boostrap csvs and extract it to the ${project.home} - smb://batcave/engineering/hackathon-Q2-2014/bugseer/bootstrap_csvs/bugseer-csv.tar.gz
+1. Get the list of files boostrap csvs from zip and extract it to the ${project.home} -https://appdirect.jira.com/wiki/display/~narayanan.venkiteswaran/bugseer
 2. run scripts/create_db.sql
    mysql --local-infile -h HOST -u USER -pPASSWORD < scripts/create_db.sql
 3. mvn install:install-file -Dfile=lib/org.moxieapps.gwt.highcharts-1.5.0.jar -DgroupId=org.moxieapps.gwt -DartifactId=highcharts -Dversion=1.5.0 -Dpackaging=jar
